@@ -39,7 +39,7 @@ https://www.jianshu.com/p/b42bcbb21133
 class Solution {
 public:
     vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites) {
-        int matrix[numCourses][numCourses] = new int[numCourses][numCourses];
+        int matrix[numCourses][numCourses];
         
         for (int i=0; i<numCourses; i++) {
             for (int j=0; j<numCourses; j++) {
@@ -53,28 +53,28 @@ public:
         
         stack<int> stk;
         for (int i=0; i<numCourses; i++) {
-            if (DFS(i, stk, 1, numCourses)==true){
+            if (DFS(i, stk, 1, numCourses,matrix[numCourses][numCourses])==true){
                 stack<int> tmp;
+                vector<int> result;
                 while(!stk.empty()) {
                     tmp.push(stk.top());
                     stk.pop();
                 }
                  while(!tmp.empty()) {
-                    vector<int> result;
-                    result.push(tmp.top());
+                    result.push_back(tmp.top());
                     tmp.pop();
                 }
                 return result;
             }
         }
         vector<int> empty;
-        retrun empty;
+        return empty;
     }
     
-    bool DFS(int node, stack<int> s, level, num) {
+    bool DFS(int node, stack<int> s, int level, int num, int (*matrix)[num]) {
         if (level == num) return true;
-        for (int i=0; i<numCourses; i++) {
-            if (matrix[node][i] = 1){
+        for (int i=0; i<num; i++) {
+            if (matrix[node][i] == 1){
                 s.push(i);
                 if (DFS(i, s, level++, num) == true)return true;
             }
@@ -83,4 +83,91 @@ public:
     }
     
 };
+```
+
+## 5 抄作业
+
+对不起了辉哥，只有先抄个作业了
+
+```java
+class Solution {
+  static int WHITE = 1;
+  static int GRAY = 2;
+  static int BLACK = 3;
+
+  boolean isPossible;
+  Map<Integer, Integer> color;
+  Map<Integer, List<Integer>> adjList;
+  List<Integer> topologicalOrder;
+
+  private void init(int numCourses) {
+    this.isPossible = true;
+    this.color = new HashMap<Integer, Integer>();
+    this.adjList = new HashMap<Integer, List<Integer>>();
+    this.topologicalOrder = new ArrayList<Integer>();
+
+    // By default all vertces are WHITE
+    for (int i = 0; i < numCourses; i++) {
+      this.color.put(i, WHITE);
+    }
+  }
+
+  private void dfs(int node) {
+
+    // Don't recurse further if we found a cycle already
+    if (!this.isPossible) {
+      return;
+    }
+
+    // Start the recursion
+    this.color.put(node, GRAY);
+
+    // Traverse on neighboring vertices
+    for (Integer neighbor : this.adjList.getOrDefault(node, new ArrayList<Integer>())) {
+      if (this.color.get(neighbor) == WHITE) {
+        this.dfs(neighbor);
+      } else if (this.color.get(neighbor) == GRAY) {
+        // An edge to a GRAY vertex represents a cycle
+        this.isPossible = false;
+      }
+    }
+
+    // Recursion ends. We mark it as black
+    this.color.put(node, BLACK);
+    this.topologicalOrder.add(node);
+  }
+
+  public int[] findOrder(int numCourses, int[][] prerequisites) {
+
+    this.init(numCourses);
+
+    // Create the adjacency list representation of the graph
+    for (int i = 0; i < prerequisites.length; i++) {
+      int dest = prerequisites[i][0];
+      int src = prerequisites[i][1];
+      List<Integer> lst = adjList.getOrDefault(src, new ArrayList<Integer>());
+      lst.add(dest);
+      adjList.put(src, lst);
+    }
+
+    // If the node is unprocessed, then call dfs on it.
+    for (int i = 0; i < numCourses; i++) {
+      if (this.color.get(i) == WHITE) {
+        this.dfs(i);
+      }
+    }
+
+    int[] order;
+    if (this.isPossible) {
+      order = new int[numCourses];
+      for (int i = 0; i < numCourses; i++) {
+        order[i] = this.topologicalOrder.get(numCourses - i - 1);
+      }
+    } else {
+      order = new int[0];
+    }
+
+    return order;
+  }
+}
 ```
